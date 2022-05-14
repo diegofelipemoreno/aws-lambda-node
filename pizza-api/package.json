@@ -1,0 +1,20 @@
+{
+  "name": "pizza-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "api.js",
+  "scripts": {
+    "create": "claudia create --region eu-central-1 --api-module api",
+    "update": "claudia update"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "devDependencies": {
+    "claudia": "^5.14.1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1135.0",
+    "claudia-api-builder": "^4.1.2",
+    "claudia-bot-builder": "^4.5.0"
+  }
+}
