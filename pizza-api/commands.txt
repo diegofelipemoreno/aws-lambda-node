@@ -1,0 +1,71 @@
+Installing
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install-mac.html
+
+aws s3 ls
+aws s3 ls --no-verify-ssl
+
+aws configure list
+aws configure set aws_access_key_id default_access_key
+aws configure set aws_secret_access_key default_secret_key
+aws configure set default.region us-east-1
+aws configure set default.ca_bundle /path/to/ca-bundle.pem
+aws configure set region us-east-1 --profile testing
+aws configure set profile.testing2.region us-east-1
+aws configure set preview.cloudsearch true
+
+aws configure import --csv file://credentials.csv
+
+Commands:
+
+Create bucket 
+aws s3 mb s3://gpc-email-test --region us-east-1
+
+Put info from local into bucket: 
+aws s3 cp ./templates s3://gpc-email-cuckoo --no-verify-ssl --recursive
+
+Create a Table in Dynamo
+aws dynamodb create-table --table-name pizza-orders  --attribute-definitions AttributeName=orderId,AttributeType=S  --key-schema AttributeName=orderId,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1  --region us-east-1  --query TableDescription.TableArn --output text
+
+
+curl -i -H "Content-Type: application/json" -X POST  -d '{}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+curl -i -H "Content-Type: application/json" -X POST -d '{"pizzaId": 1,"address": "221B Baker Street"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+curl -i -H "Content-Type: application/json" -X POST -d '{}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/pizzas
+curl -i -H "Content-Type: application/json" -X POST -d '{"pizzaId":1}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/pizzas
+curl -i -H "Content-Type: application/json" -X POST -d '{}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/pizzas-orders
+
+curl -i  -H "Content-Type: application/json"  -X PUT  -d  '{"pizza":11111, "address":"Tazzzz"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/b5732f2d-7e0c-4714-815e-94d4959ab2fa
+
+curl -i  -H "Content-Type: application/json"  -X DELETE  https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/42
+
+aws dynamodb create-table --table-name pizza-orders  --attribute-definitions AttributeName=orderId,AttributeType=S  --key-schema AttributeName=orderId,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1  --region us-east-1  --query TableDescription.TableArn --output text
+
+curl -i  -H "Content-Type: application/json" -X POST  -d '{"pizza":4,"address":"221b Baker Street"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+
+aws iam put-role-policy  --role-name pizza-api-executor  --policy-name PizzaApiDynamoDB  --policy-document file://./roles/dynamodb.json
+
+aws dynamodb scan  --table-name pizza-orders  --region us-east-1 --output json
+
+curl -i  -H "Content-Type: application/json" -X POST  -d '{"pizza":2,"address":"221b Baker Street"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+
+curl -i  -H "Content-Type: application/json"  https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/7128b181-cc33-4a32-ac75-69a22e8b3a1d
+
+curl -i  -H "Content-Type: application/json"  -X PUT  -d  '{"address":"mi casa", "orderId”: "7128b181-cc33-4a32-ac75-69a22e8b3a1d", "pizza": 4, "status": "pending"}
+ '  https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/7128b181-cc33-4a32-ac75-69a22e8b3a1d
+
+curl -i  -H "Content-Type: application/json" -X PUT -d '{"address":"mi casa", "orderId": "7128b181-cc33-4a32-ac75-69a22e8b3a1d", "pizza": 4, "status": "pending"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/7128b181-cc33-4a32-ac75-69a22e8b3a1d
+
+curl -i  -H "Content-Type: application/json" -X PUT -d '{"address":"mi casa", "orderId": "7128b181-cc33-4a32-ac75-69a22e8b3a1d", "pizza": 4, "status": "pending"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/7128b181-cc33-4a32-ac75-69a22e8b3a1d
+
+curl -i -H "Content-Type: application/json" -X PUT -d '{"pizza": 3, "address": "mi casa"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/7128b181-cc33-4a32-ac75-69a22e8b3a1d
+
+curl -i -H "Content-Type: application/json" -X PUT -d '{"pizza": 3, "address": "Mi apto"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/7128b181-cc33-4a32-ac75-69a22e8b3a1d
+
+curl -i -H "Content-Type: application/json" -X DELETE https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders/17ca44f4-57a7-40b4-a927-745aa6532532
+
+curl -i -H "Content-Type: application/json" -X POST -d '{"pizza": 1, "address": "221B Baker Street Holmes"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+
+curl -i -H "Content-Type: application/json" -X POST -d '{}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+
+curl -i -H "Content-Type: application/json" -X POST -d '{"orderId":"9ce1594b-ef7b-4520-b6c5-9e5d9d6f5b9d","status":"pending"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/delivery
+
