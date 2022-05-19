@@ -7,9 +7,14 @@ const createOrder = require('./handlers/create-order.js');
 const updateOrder = require('./handlers/update-order.js');
 const removeOrder = require('./handlers/remove-order.js');
 const updateDeliveryStatus = require('./handlers/update-delivery-status.js');
+const generatePresignedUrl = require('./handlers/generate-presigned-url.js');
 const CONSTANTS = require('./constants.js');
 
 const api = new Api();
+
+api.registerAuthorizer('userAuthentication', {
+  providerARNs: ['arn:aws:cognito-idp:us-east-1:101543071309:userpool/us-east-1_QQWgLjqkv']
+})
 
 //Index
 api.get(CONSTANTS.ROUTES.index, () => "Welcome to Pizza API");
@@ -29,10 +34,12 @@ api.get(CONSTANTS.ROUTES.orderById, (request) => {
 
 // Post pizza order.
 api.post(CONSTANTS.ROUTES.orders, (request) => {
-    return createOrder(request.body)
+    return createOrder(request)
   }, {
     success: 201,
     error: 400
+  }, {
+    cognitoAuthorizer: 'userAuthentication'
   });
   
 // Update pizza order.
@@ -40,21 +47,36 @@ api.put(CONSTANTS.ROUTES.orderById, (request) => {
     return updateOrder(request.pathParams.id, request.body)
    }, {
     error: 400
-   });
+   }, {
+    cognitoAuthorizer: 'userAuthentication'
+  });
 
 // Remove pizza order.
 api.delete(CONSTANTS.ROUTES.orderById, (request) => {
     return removeOrder(request.pathParams.id)
    }, {
     error: 400
-   });
+   }, {
+    cognitoAuthorizer: 'userAuthentication'
+  });
 
 // Handler for the webhook.
-api.post(CONSTANTS.ROUTES.delivery, (request) => {
+ api.post(CONSTANTS.ROUTES.delivery, (request) => {
   return updateDeliveryStatus(request.body)
- }, {
+}, {
   success: 200,
   error: 400
- });
+}, {
+  cognitoAuthorizer: 'userAuthentication'
+});
+
+// Handler for the webhook.
+api.post(CONSTANTS.ROUTES.uploadUrl, (request) => {
+  return generatePresignedUrl(request.body)
+}, {
+  error: 400
+}, {
+  cognitoAuthorizer: 'userAuthentication'
+});
 
 module.exports = api;

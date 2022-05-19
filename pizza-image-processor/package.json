@@ -1,0 +1,19 @@
+{
+  "name": "pizza-image-processor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "createBucket": "aws s3 mb s3://diegos-pizzeria --region us-east-1",
+    "create": "claudia create --region us-east-1 --handler index.handler",
+    "setTrigger": "claudia add-s3-event-source --bucket diegos-pizzeria --prefix images/",
+    "update": "claudia update --no-optional-dependencies"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1137.0",
+    "fs": "0.0.1-security",
+    "mime": "^3.0.0"
+  }
+}

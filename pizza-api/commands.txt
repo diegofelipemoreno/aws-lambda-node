@@ -27,6 +27,52 @@ aws s3 cp ./templates s3://gpc-email-cuckoo --no-verify-ssl --recursive
 Create a Table in Dynamo
 aws dynamodb create-table --table-name pizza-orders  --attribute-definitions AttributeName=orderId,AttributeType=S  --key-schema AttributeName=orderId,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1  --region us-east-1  --query TableDescription.TableArn --output text
 
+Show logs with the CloudWatch
+aws logs filter-log-events --filter='Save an order' --log-group-name=/aws/lambda/pizza-api --region=us-east-1 --output=json 
+(only text to improve readability)
+aws logs filter-log-events --filter='Save an order' --log-group-name=/aws/lambda/pizza-api --query='events[0].message' --region=us-east-1 --output=text --no-verify-ssl
+
+Attaching the X-Ray managed read-only policy to your Lambda role
+aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess --role-name pizza-api-executor --region us-east-1 --output json
+
+Enabling active tracking using AWS X-Ray
+aws lambda update-function-configuration --function-name pizza-api --tracing-config Mode=Active --region us-east-1
+
+Creating a user pool (a set of directories for your users)
+aws cognito-idp create-user-pool --pool-name Pizzeria --policies "PasswordPolicy={MinimumLength=8, RequireUppercase=false, RequireLowercase=false, RequireNumbers=false,RequireSymbols=false}" --username-attributes email --query UserPool.Id --output text
+us-east-1_QQWgLjqkv
+
+Creating an identity pool
+aws cognito-identity create-identity-pool --identity-pool-name Pizzeria --allow-unauthenticated-identities --supported-login-providers graph.facebook.com=266094173886660 --cognito-identity-providers ProviderName=cognito-idp.us-east-1.
+amazonaws.com/us-east-1_QQWgLjqkv,ClientId=7l6hk3olkd0uqc5gvjddph3ma6,ServerSideTokenCheck=false --query IdentityPoolId --output text 
+
+Add roles to the identity pool
+aws cognito-identity set-identity-pool-roles --identity-pool-id us-east-1:0d7f5763-8c99-4fec-9740-b776d8d4cf56 --roles authenticated=arn:aws:iam::101543071309:role/Cognito_PizzeriaAuth_Role,unauthenticated=arn:aws:iam::101543071309:role/Cognito_PizzeriaUnauth_Role --no-verify-ssl
+
+create a S3 bucket
+aws s3 mb s3://diegos-pizzeria --region us-east-1
+
+Deploying the image processing service using Claudia
+claudia create --region us-east-1 --handler index.handler
+
+Adding the S3 trigger to the Lambda function
+claudia add-s3-event-source --bucket diegos-pizzeria --prefix images/ 
+
+
+claudia create --region us-east-1 --api-module bot --configure-fb-bot
+
+
+curl -X POST -F 'subscribed_fields=["messages", "message_deliveries"]' -F 'access_token=EAAPPxz4NsCIBAEv8Y3iIceIufzdyYGl7PjLXolrKdsJupMhMtZAKPpTZBeomZBDW0ACA3UHQQNfIO9DY1T9t7jRJjLSNUmV3aiZAwn5ZCXLhNqZBwJCaXd9bcVlW0Unf4BtoAfIjNY65yca4dJhnVrV8RXPqxjlWaSvry4Ygoiozv5pL6SJdtzTTNICr4vItsZD' https://graph.facebook.com/v13.0/104270022295012/subscribed_apps
+
+curl -X POST -F 'subscribed_fields=["messages"]' -F 'access_token=EAAPPxz4NsCIBAG0pSyOrHCcqZAtPGthfkXBPq8KPjlNeZAvEIQqK4O7ZCExUaeDEJoYZATe8qBVW6yylolZBnZBlsUPpfjN1xbIkSUx2duUiGRoS0Ux5ts3Q49ZC1A82KFcOjnxFp5i5vZA0XEzourmjZBrlEAmEpv58joFRhtVIeU897AiDcZBjTgKhtesYy44z0ZD' https://graph.facebook.com/v3.2/104270022295012/subscribed_apps
+
+curl -X POST https://graph.facebook.com/v3.2/104270022295012/subscribed_apps?subscribed_fields=["messages"]&access_token=EAAPPxz4NsCIBAN07EhmGQvZCJCfgKvBrU8vjKci5oPpKjRoHl4F1JqeX7iEAWJx1HWz14eRqYZC4NrysVKFneBpNsGZANT5nyGekwnwMPLZBxePF47KkpiYrjDnydZC1lK7VHHLKlAwA7f9rH87ou3IjX6FAO6xAbhvZBNvDJwqZC8rMYnKcrEZCXOF3zSCOD0YZD
+
+
+aws iam put-role-policy --role-name pizza-fb-chatbot-executor --policy-name PizzaBotDynamoDB --policy-document file://./roles/dynamodb.json
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
 
 curl -i -H "Content-Type: application/json" -X POST  -d '{}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
 curl -i -H "Content-Type: application/json" -X POST -d '{"pizzaId": 1,"address": "221B Baker Street"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
@@ -67,5 +113,15 @@ curl -i -H "Content-Type: application/json" -X POST -d '{"pizza": 1, "address": 
 
 curl -i -H "Content-Type: application/json" -X POST -d '{}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
 
-curl -i -H "Content-Type: application/json" -X POST -d '{"orderId":"9ce1594b-ef7b-4520-b6c5-9e5d9d6f5b9d","status":"pending"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/delivery
+curl -i -H "Content-Type: application/json" -X GET https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
 
+curl -i -H "Content-Type: application/json" -X POST -d '{"orderId":"7128b181-cc33-4a32-ac75-69a22e8b3a1d","status":"pending"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/delivery
+
+curl -o - -s -w ", status: %{http_code}\n" -H "Content-Type: application/json" -X POST -d '{"pizzaId":1,"address":"221B Baker Street"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders
+
+curl -o - s -s -w ", status: %{http_code}" -H "Content-Type: application/json" -X POST https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/upload-url
+
+
+unauthorized user test:
+(check the app client secret toke, should be available to this can be validated).
+curl -o - -s -w ", status: %{http_code}\n" -H "Content-Type: application/json" -X POST -d '{"pizzaId":1,"address":"221B Baker Street"}' https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/orders

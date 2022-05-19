@@ -1,0 +1,7 @@
+{
+  "lambda": {
+    "role": "pizza-image-processor-executor",
+    "name": "pizza-image-processor",
+    "region": "us-east-1"
+  }
+}

@@ -1,0 +1,15 @@
+{
+"lambda": {
+    "role": "facebook-chatbot-executor",
+    "name": "pizza-fb-chatbot",
+    "region": "us-east-1"
+  },
+  "api": {
+    "id": "dnof5pb875",
+    "module": "bot",
+    "url": "https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest",
+      "deploy": {
+      "facebook": "https://dnof5pb875.execute-api.us-east-1.amazonaws.com/latest/facebook"
+    }
+  }
+}

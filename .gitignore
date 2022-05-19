@@ -5,5 +5,5 @@
 .vscode
 .history
 dist/
-node_modules/
+**/node_modules/
 **/.depcache.json

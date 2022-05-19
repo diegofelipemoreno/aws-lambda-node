@@ -1,6 +1,7 @@
 'use strict'
 
-const AWS = require('aws-sdk');
+const AWSXRay = require('aws-xray-sdk-core');
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 function updateDeliveryStatus(request) {
@@ -12,9 +13,9 @@ function updateDeliveryStatus(request) {
     Key: {
       orderId: request.orderId
     },
-    UpdateExpression: 'set deliveryStatus = :d',
+    UpdateExpression: 'set orderStatus = :s',
     ExpressionAttributeValues: {
-      ':d': request.status
+      ':s': request.status
     }
   }).promise()
     .then(() => {
@@ -24,7 +25,7 @@ function updateDeliveryStatus(request) {
           Key: {
             orderId: request.orderId
           },
-          UpdateExpression: 'set deliveryStatus = :s',
+          UpdateExpression: 'set orderStatus = :s',
           ExpressionAttributeValues: {
             ':s': "delivered"
           }

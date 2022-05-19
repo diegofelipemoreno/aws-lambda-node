@@ -5,7 +5,8 @@ const ROUTES = {
     pizzas: "/pizzas",
     orders: "/orders",
     orderById: "/orders/{id}",
-    delivery: "/delivery"
+    delivery: "/delivery",
+    uploadUrl: "/upload-url"
 };
 
 module.exports = {URL_SITE, ROUTES};
