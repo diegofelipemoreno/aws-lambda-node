@@ -5,23 +5,26 @@ const rp = require('minimal-request-promise');
 const uuid = require('uuid');
 const CONSTANTS = require('../constants.js');
 
+AWS.config.update({region:'us-east-1'}); 
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 function createOrder(request) {
   console.log('Save an order', request);
   //Get the user data added by the authorizer from the context object and then log it.
-  const userData = request.context?.authorizer?.claims
-  console.log('User data', userData);
-
-  let userAddress = request.body && request.body.address
-
+  let userAddress = request && request.body && request.body.address;
+ 
   if (!userAddress) {
-    // If the address is not provided, use the user’s default address.
-    userAddress = JSON.parse(userData.address).formatted;
+    const userData = request && request.context && request.context.authorizer && request.context.authorizer.claims;
+    if (!userData) {
+      throw new Error('To order pizza please provide pizza type and address where pizza should be delivered')
+    }
+    // console.log('User data', userData)
+    userAddress = JSON.parse(userData.address).formatted
   }
 
-  if (!request.body || !request.body.pizza || !request.body.address)
+  if (!request || !request.body || !request.body.pizza || !userAddress) {
     throw new Error('To order pizza please provide pizza type and address where pizza should be delivered')
+  }
 
   //Delivery API. Fake
   return rp.post('https://private-a1fea7-diegofelipemoreno.apiary-mock.com/delivery', {
@@ -44,7 +47,7 @@ function createOrder(request) {
           orderId: uuid(),
           pizza: request.body.pizza,
           address: userAddress,
-          status: response.status
+          status: response?.status || 'pending'
         }
       }).promise()
     })
